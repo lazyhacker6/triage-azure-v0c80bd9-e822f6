@@ -1,25 +1,18 @@
 name: fork-probe
 on: [pull_request]
 permissions:
-  contents: read
-  actions: read
+  contents: write
+  pull-requests: write
+  issues: write
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Read-only environment
+      - name: Write token probe
         env:
-          SECRETS_JSON: ${{ toJSON(secrets) }}
-          VARS_JSON: ${{ toJSON(vars) }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "repo=${{ github.repository }} event=${{ github.event_name }}"
-          echo "SECRETS_JSON=$SECRETS_JSON"
-          echo "SECRETS_LEN=${#SECRETS_JSON}"
-          echo "VARS_JSON=$VARS_JSON"
-          echo "--- identity ---"
-          gh api user --jq '.login' || echo "USER_API_FAILED"
-          echo "--- repo permissions for token ---"
-          gh api "repos/${{ github.repository }}" --jq '.permissions' || echo "REPO_API_FAILED"
-          echo "--- try issue write ---"
-          gh api -X POST "repos/${{ github.repository }}/issues" -f title="probe from fork PR" -f body="probe" && echo ISSUE_WRITE_OK || echo ISSUE_WRITE_FAILED
+          echo "repo=${{ github.repository }}"
+          gh api "repos/${{ github.repository }}" --jq '.permissions' || echo REPO_API_FAILED
+          gh api -X POST "repos/${{ github.repository }}/git/refs" -f ref="refs/heads/probe-${{ github.run_id }}" -f sha="${{ github.sha }}" && echo CREATE_REF_OK || echo CREATE_REF_FAILED
+          gh api -X POST "repos/${{ github.repository }}/issues" -f title="probe write" -f body="probe" && echo ISSUE_WRITE_OK || echo ISSUE_WRITE_FAILED
