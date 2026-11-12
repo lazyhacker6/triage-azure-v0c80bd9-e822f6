@@ -1,0 +1,277 @@
+<span id="images-and-voice"></span>
+
+# Document formats & images
+
+Agent Application can ground text answers in image descriptions extracted
+from documents. This differs from passing an image or audio directly to a
+model. The conversational interface and retrieval tools accept different
+inputs and return different outputs. Selecting a host does not enable image
+or audio input.
+This page explains capability boundaries. The
+[full-stack deployment guide](deploy-full-stack.md) contains deployment procedures.
+
+<span id="choose-a-scenario"></span>
+
+## Supported content
+
+| Content | Application boundary |
+| --- | --- |
+| Diagrams in a shared collection | Native Foundry IQ Blob ingestion can produce image descriptions when its model and extraction requirements are met. |
+| Private conversational file | Optional inline TXT/Markdown, PDF, PNG or JPEG; at most three files, 64 KiB each and 256 KiB per serialized inline turn. No workflow attachments. |
+| Screenshot or standalone image in chat | PNG/JPEG attachment transport is implemented; model image understanding is not verified. |
+| Voice | No supplied capture, transcription, realtime audio or playback integration. |
+
+<span id="ground-answers-in-document-images"></span>
+
+## Document image grounding
+
+Native Blob ingestion can verbalize images during document processing. The
+knowledge base then returns extracted content to the orchestrator. The model
+receives text, not the original image.
+
+This path uses `RETRIEVAL_BACKEND=foundry_iq`,
+`FOUNDRY_IQ_PATTERN=azureBlob`, `FOUNDRY_IQ_KNOWLEDGE_SOURCE_KIND=azureBlob`
+and `FOUNDRY_IQ_CONTENT_EXTRACTION_MODE=standard`.
+Agent App Ingestion is not required.
+
+The provisioning template sets `disableImageVerbalization=false`.
+It supplies `chatCompletionModel` only for its supported Content Understanding model
+names. `gpt-4.1` is supported. The default `gpt-5-nano` is not in that allowlist.
+
+The flag alone therefore does **not** establish working image verbalization
+in a fresh deployment. Standard extraction also requires a compatible region,
+Foundry AI Services endpoint and embedding deployment.
+[Blob source prerequisites](https://learn.microsoft.com/en-us/azure/search/agentic-knowledge-source-how-to-blob)
+describe service requirements.
+
+In `main.parameters.json`, the chat entry of `modelDeploymentList` uses
+`canonical_name: CHAT_DEPLOYMENT_NAME`. `model.name` identifies the family
+and `name` identifies the deployment. A model change affects availability,
+quota and extraction compatibility.
+[Deployment settings](configuration.md) identifies the configuration inputs.
+To verify processing, check the model binding in the rendered source.
+Then check the extracted diagram content. The model name alone is not
+evidence that processing succeeded.
+
+### How to validate native image grounding
+
+1. **Before provision**, select the native Blob path in
+   [Ingestion](ingestion.md#how-to-prepare-a-shared-blob-source).
+   In root `main.parameters.json`, inspect
+   `parameters.modelDeploymentList.value`: the entry with
+   `canonical_name: CHAT_DEPLOYMENT_NAME` declares `model.name`, `model.version`,
+   deployment `name` and capacity. Choose an available model supported by the
+   extraction template. Renaming a deployment does not change its model.
+2. Run the [provision/deploy lifecycle](deploy-full-stack.md) with the reviewed
+   model and source settings. The platform operator owns model quota and
+   service bindings. The source owner approves ingestion access.
+3. **After provision**, upload an approved PDF containing a legible diagram to
+   the configured shared container. Wait for managed indexing, then inspect
+   extracted text for a fact present only in that diagram.
+4. **At runtime**, ask for that fact through the enabled Foundry IQ capability.
+   Verify the answer and citation, then repeat with a denied user.
+   If extracted text is missing, check ingestion and the model binding.
+   If a chunk is not retrieved, also check the source binding and permissions.
+
+The ingestion identity's source/model access is independent of the user's
+retrieval permissions. Private connectivity follows
+[Network design](network-isolation.md). Protected hosted retrieval uses the
+[integrated delegated identity path](application-auth.md#3-verify-the-retrieval-identity-boundary)
+and still needs allow/deny validation. Image extraction does not authorize users.
+
+## Custom document formats
+
+The optional [Agent App Ingestion](ingestion.md) service chooses a chunker from
+the file extension. This table describes that custom pipeline, not the native
+Foundry IQ Blob source's format contract and not the chat upload allowlist.
+
+| Input | Custom processing | Conditional dependencies |
+| --- | --- | --- |
+| PDF, PNG, JPEG/JPG, BMP, TIFF | Document analysis, with optional figure extraction. | Content Understanding by default, or Document Intelligence when selected. |
+| DOCX, PPTX | Document analysis, with optional figures. | Content Understanding or a Document Intelligence version supporting Office formats. Older Document Intelligence APIs reject these formats. |
+| XLSX | Dedicated spreadsheet chunker, with sheet-based or optional row-based processing. | Spreadsheet parser, model and embedding deployments. Row-wise Blob processing can use staging storage. |
+| JSON | Dedicated JSON chunking. | Embedding deployment for indexed content. |
+| VTT | Transcript processing. | Transcript text and model/embedding services used by that chunker. This is not audio transcription. |
+| TXT, Markdown, HTML/HTM/SHTML, Python, CSV, XML | Format-aware text splitting. | Readable source text and embedding deployment for indexing. |
+
+Approved SQL schemas and examples follow the
+[MCP metadata import contract](nl2sql.md#approved-source-and-metadata-contract),
+not document OCR or a schema/example Search index.
+Their embeddings are stored in application Cosmos.
+This SQL metadata path does not require a document ingestion service.
+
+An unrecognized extension falls to the text chunker, which still rejects formats
+outside its supported set. That fallback does not mean every file type is
+supported.
+
+The factory also routes `.xls` to the spreadsheet chunker, but its
+OpenPyXL parser expects an Open XML workbook, not a binary Excel file.
+Convert binary workbooks to `.xlsx` before ingestion.
+
+A source connector can impose a narrower allowlist, such as
+SharePoint's default `pdf,docx,pptx`. This custom processing table is not a
+native chat upload allowlist.
+
+### Select analysis and chunking
+
+Configure these values through [Application settings](application-settings.md).
+They affect the custom ingestion service, not native Search source extraction.
+
+For **initial deployment**, declare the nonsecret settings as string-valued
+`{name,value,label}` entries under root
+`parameters.additionalAppConfigurationSettings.value`, label `agent-lz`.
+For example:
+
+```json
+{"name":"CHUNKING_NUM_TOKENS","value":"2048","label":"agent-lz"}
+```
+
+Use the [declared-settings publisher](configuration.md#configuration-ownership-and-declarations),
+not an undeclared azd variable.
+
+**After deployment**, ingestion's configuration API can update supported
+settings such as `CHUNKING_NUM_TOKENS` and `MULTIMODAL`.
+The API does not accept every analysis or model setting.
+See [API reference](application-api.md#ingestion-administration).
+
+- `USE_DOCUMENT_INTELLIGENCE=false` selects Content Understanding using
+  `AI_FOUNDRY_ACCOUNT_ENDPOINT`, `CONTENT_UNDERSTANDING_ANALYZER`
+  (default `prebuilt-layout`) and `CONTENT_UNDERSTANDING_API_VERSION`.
+- `USE_DOCUMENT_INTELLIGENCE=true` selects Document Intelligence and its
+  `DOC_INTELLIGENCE_API_VERSION`. Office support depends on that version.
+  The selected service needs its own permissions, model availability and
+  network path.
+- `CHUNKING_NUM_TOKENS` defaults to `2048`, `CHUNKING_MIN_CHUNK_SIZE` to `100`,
+  and `TOKEN_OVERLAP` to `200` in document/text chunking. Minimum-size filtering
+  and splitting can affect what reaches retrieval.
+- `MAX_PAGES_PER_ANALYSIS` defaults to `300` for document analysis.
+- `SPREADSHEET_CHUNKING_BY_ROW=false` and
+  `SPREADSHEET_CHUNKING_BY_ROW_INCLUDE_HEADER=false` are the spreadsheet defaults.
+  `SPREADSHEET_CHUNKING_NUM_TOKENS` defaults to `0`, leaving that extra token
+  limit disabled. Review row/header choices against the actual workbook.
+
+Analysis-service dependencies are conditional. Selecting a text or spreadsheet
+chunker does not mean it performs OCR. Indexing still needs its configured
+embedding deployment and compatible vector dimensions.
+
+Transcript processing generates a summary and can call the chat model.
+Sheet-based spreadsheet processing can also call the chat model to summarize
+large content.
+
+### Extract and retrieve figures
+
+To try this on an isolated custom pipeline:
+
+1. **Before starting ingestion**, review [schedules](ingestion-jobs.md) and
+   approve the target index, image container, analysis service and model.
+2. Declare `MULTIMODAL=true` using the settings location above, together with
+   the image storage/model settings below. The ingestion identity needs image
+   Blob write and model access. The querying user needs separate retrieval
+   permissions.
+3. Publish settings and restart ingestion for consistent module-level clients.
+   Reprocess a small source document. Changing a setting does not rebuild
+   already indexed chunks or captions.
+4. Inspect `relatedImages`, `imageCaptions` and caption vectors in the indexed
+   chunks. Verify actual retrieval output before expanding the corpus.
+
+`MULTIMODAL=false` is the custom ingestion default. Enabling it selects figure
+processing for supported document/image inputs. The pipeline extracts figures,
+stores images, generates captions and attaches related-image URLs, caption text
+and caption embeddings to chunks.
+
+Configure `DOCUMENTS_IMAGES_STORAGE_CONTAINER` (default `documents-images`),
+storage write access and an image-capable model. `VISION_DEPLOYMENT_NAME` selects
+the captioning model and falls back to `CHAT_DEPLOYMENT_NAME` when unset.
+A text-only model is not made image-capable by that fallback.
+`MINIMUM_FIGURE_AREA_PERCENTAGE` defaults to `4.0`, so small figures can be
+excluded. Missing or failed caption generation can leave `No caption available.`
+rather than a useful description.
+
+The registered retrieval tool determines which indexed text and image fields
+reach an Agent or Workflow.
+
+Figure extraction does not register a retrieval tool.
+It does not change which files the chat accepts.
+It also does not automatically send original images to the model.
+Check the tool output and the model inputs separately.
+
+Review the separate image cleanup configuration in
+[Jobs & schedules](ingestion-jobs.md#index-purge-and-cleanup-effects).
+It can delete stored figures and does not infer its index/container from every
+chunker setting.
+
+<span id="attach-a-pdf-to-a-conversation"></span>
+
+## Private attachment boundary
+
+**Enable attachments.** Set `ENABLE_PRIVATE_ATTACHMENTS` for
+`conversational` or `both` mode. Workflow inputs do not support attachments.
+For setup, follow
+[enable private conversational input](ingestion.md#how-to-enable-private-conversational-input).
+Select this lifecycle input before provision/deploy.
+Custom ingestion's `MULTIMODAL` setting does not enable private attachments.
+
+**Check file limits.** Accepted files are UTF-8 TXT/Markdown, PDF, PNG and JPEG.
+Each turn accepts at most three files. Each file must be at most 64 KiB.
+For either host, the serialized inline turn must fit within 256 KiB.
+This total includes text, encoding/escaping and metadata overhead.
+Each file entry uses `name`, `content_type` and `data_base64`.
+The application validates Base64 encoding, file format/signature and ownership.
+
+**Understand the host path.** Foundry Hosted uses official `input_file`/image
+input. The Azure Container Apps integration uses the Azure Durable Task
+Scheduler (DTS) for durable execution. It supplies attachments through native
+`context_messages` and IDs.
+See [Agent hosting](hosted-agents.md) for the execution options.
+
+**Keep attachments separate from shared ingestion.** Private attachments do
+not use a Blob URL or SAS. They do not start an ingestion job or publish files
+to a shared collection. UI metadata stores file descriptors only.
+It does not store file bytes, transcripts or tokens.
+Shared ingestion supports a different set of file formats.
+Use the private attachment limits above for chat files.
+
+`DEPLOY_INGESTION_CONTAINER_APP=true` deploys the separate ingestion service.
+It does not enable private conversational attachments.
+
+**Verify model understanding separately.** Transport tests check attachment
+delivery. They do not prove that the model understands PDF or image content.
+Test the selected model with representative files.
+See [Conversations & files](conversations.md#private-attachments).
+
+<span id="diagnose-a-missing-image-answer"></span>
+
+## Evidence and configuration lifecycle
+
+Grounded image answers depend on completed ingestion, extracted content, a
+compatible model binding and the intended source reference. A processed shared
+PDF can still be absent from retrieval. Successful shared-source processing
+does not establish a private attachment feature.
+
+Supported functional parameters use scoped App Configuration refresh.
+Existing workflows retain their functional snapshot.
+Changes to source/model bindings, tool registration or host/publication
+require a compatible deployment.
+UI and ingestion have their own reload rules. Follow
+[Application settings](application-settings.md) and the
+[full-stack deployment guide](deploy-full-stack.md).
+The pinned API remains part of the application contract rather than an
+independent setting to change without compatibility validation.
+
+<span id="direct-images-or-voice-need-an-application-extension"></span>
+<span id="direct-images-or-voice-need-an-agent-application-extension"></span>
+
+## Direct images and voice
+
+PNG/JPEG can use the optional inline conversational attachment path.
+Verify the selected model's actual interpretation separately. Microsoft's
+[vision input guide](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/gpt-with-vision)
+describes model APIs, not proof that this application's model understands
+every accepted image.
+
+Voice requires client/service integration for capture, transcription or
+realtime audio, and playback. The
+[Realtime audio guide](https://learn.microsoft.com/en-us/azure/ai-services/openai/how-to/realtime-audio)
+describes those APIs. [Bring your own app](build-your-own-app.md) covers the
+application boundary. Voice integration needs authentication, input limits and
+source authorization when connected to retrieval.

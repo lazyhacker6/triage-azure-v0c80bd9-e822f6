@@ -1,0 +1,35 @@
+# Agent Landing Zone What's new
+
+Major updates by month. See the [release notes](https://github.com/Azure/agent-landing-zone/releases)
+for all changes and fixes.
+
+## November 2026
+
+| Release | Highlights |
+| --- | --- |
+| [v7.3.0](https://github.com/Azure/agent-landing-zone/releases/tag/v7.3.0) | [Inline visuals](inline-visuals.md) in chat: optional per-agent cards, tables and charts with source-backed follow-ups and restored conversation history. Off by default, with no new Azure resources. |
+| [v7.2.0](https://github.com/Azure/agent-landing-zone/releases/tag/v7.2.0) | Optional Entra-only [PostgreSQL](postgresql.md) for fresh custom-application deployments in Bicep and Terraform. Basic uses restricted public access through dedicated NAT; isolation uses Private Link. SQL grants are manual, with independent data-protection locks and guarded recovery/removal. |
+| [v7.1.0](https://github.com/Azure/agent-landing-zone/releases/tag/v7.1.0) | Optional [service-identity authentication](application-auth.md) with OBO still the default. [Foundry IQ](foundry-iq.md) uses the managed knowledge Toolbox. Sources enforce their own authorization, with explicit missing-OBO and tool errors rather than source allowlists or identity fallback. |
+| [v7.0.0](https://github.com/Azure/agent-landing-zone/releases/tag/v7.0.0) | [Agent App MCP Server](agent-app-mcp.md) with explicit, empty-by-default toolsets. [NL2SQL](nl2sql.md) runs through two authenticated MCP tools instead of direct orchestrator SQL. Applications declare their own tools and dependencies above the [reusable foundation](build-your-own-app.md). |
+| [v6.0.0](https://github.com/Azure/agent-landing-zone/releases/tag/v6.0.0) | Native conversations and human-reviewed workflows with state and resume on Foundry Hosted or durable Container Apps. Two public native selection axes: `ORCHESTRATION_HOST` and `APPLICATION_MODE`. Authenticated native UI with independently optional history, feedback and private files. |
+
+## October 2026
+
+| Release | Highlights |
+| --- | --- |
+| [v5.6.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.6.0) | Clear provider-specific infrastructure layout and shared automation. Embeddings now default to Global Standard in Bicep and Terraform, with explicit regional overrides retained. |
+| [v5.5.3](https://github.com/Azure/agent-landing-zone/releases/tag/v5.5.3) | Lower-cost Basic firewall by default for isolated standalone deployments, with matching Bicep/Terraform management networking and topology-aware subnet reservations. |
+| [v5.5.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.5.0) | Integrated per-user knowledge security: native Search document permissions, protected citation downloads and interactive Conditional Access recovery. |
+| [v5.4.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.4.0) | Integrated Terraform with the native azd lifecycle for [infrastructure-only](deploy-terraform-infra-only.md) and [full-stack](deploy-terraform-full-stack.md) deployment, using Azure Storage remote state. Bicep remains the default. |
+| [v5.3.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.3.0) | Added 12 default subnets for isolated deployments, including Power Platform and AI Gateway. |
+| <span id="simpler-hosted-deployment"></span>[v5.2.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.2.0) | Simplified hosted deployment: `azd up` now prepares the agent image automatically, with no separate preparation step. |
+| [v5.1.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.1.0) | Added reviewable outbound firewall rules based on each application's declared network requirements. |
+| [v5.0.0](https://github.com/Azure/agent-landing-zone/releases/tag/v5.0.0) | Separated Foundry, application and networking resources into three resource groups by default for new deployments. |
+| <span id="14th-october-2026"></span><span id="ingestion-and-private-connectivity"></span>[v4.3.0](https://github.com/Azure/agent-landing-zone/releases/tag/v4.3.0) | Made native Foundry IQ ingestion the default, with standalone ingestion as an option. |
+| <span id="3rd-october-2026"></span>[v4.0.0](https://github.com/Azure/agent-landing-zone/releases/tag/v4.0.0) | Separate infrastructure and application deployment workflows. |
+
+## September 2026
+
+| Release | Highlights |
+| --- | --- |
+| [v3.8.0](https://github.com/Azure/agent-landing-zone/releases/tag/v3.8.0) | Made Foundry-hosted agents the default for new deployments, with the administrative panel optional. |

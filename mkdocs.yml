@@ -1,0 +1,223 @@
+site_name: AI Landing Zones
+site_description: Documentation for AI Landing Zones
+site_author: Microsoft
+repo_url: https://github.com/Azure/AI-Landing-Zones
+theme:
+  name: material
+  custom_dir: overrides
+  language: en
+  logo: media/logo.svg
+  favicon: media/logo.svg
+  palette:
+    scheme: default
+  features:
+    - content.icon
+    - content.iconify
+    - navigation.tracking
+    # - toc.integrate
+    - content.code.annotate
+    - navigation.top
+plugins:
+  - search
+  - macros
+exclude_docs: |
+  /_snippets/
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - md_in_html
+  - sane_lists
+  - mdx_truly_sane_lists
+  - pymdownx.snippets:
+      base_path: ["docs/_snippets"]
+      check_paths: true
+      url_download: false
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.tasklist:
+      custom_checkbox: true
+nav:
+  - Home: index.md
+  - Agent Landing Zone:
+      - "Overview": agent-landing-zone/index.md
+      - "Get started": agent-landing-zone/get-started.md
+      - "What's new": agent-landing-zone/whats-new.md
+      - Plan:
+          - "Deployment choices": agent-landing-zone/planning.md
+          - "Design checklist": architecture/design-checklist.md
+          - "Network design": agent-landing-zone/network-isolation.md
+          - "Sizing & cost planner": agent-landing-zone/sizing-cost-planner.md
+      - Deploy:
+          - Bicep:
+              - "Deploy infra only": agent-landing-zone/deploy-infra-only.md
+              - "Deploy full stack": agent-landing-zone/deploy-full-stack.md
+          - Terraform:
+              - "Overview": agent-landing-zone/terraform.md
+              - "Deploy infra only": agent-landing-zone/deploy-terraform-infra-only.md
+              - "Deploy full stack": agent-landing-zone/deploy-terraform-full-stack.md
+          - "Deploy via portal": agent-landing-zone/portal.md
+          - "Azure DevOps": agent-landing-zone/azure-devops.md
+          - "Companion guides":
+              - "Application Gateway": agent-landing-zone/application-gateway.md
+              - "Private access (VPN)": agent-landing-zone/private-access.md
+              - "PostgreSQL": agent-landing-zone/postgresql.md
+      - Operate:
+          - "Updates & recovery": agent-landing-zone/deployment-operations.md
+          - "Troubleshooting": agent-landing-zone/troubleshooting.md
+      - Reference:
+          - "Deployment settings": agent-landing-zone/configuration.md
+          - "Resource naming": agent-landing-zone/resource-naming.md
+      - Agent Application:
+          - "Overview": agent-landing-zone/application.md
+          - Agents:
+              - "Hosting": agent-landing-zone/hosted-agents.md
+              - "Agents & prompts": agent-landing-zone/agent-strategies.md
+              - "Workflows & human input": agent-landing-zone/workflows.md
+              - "Tools & MCP": agent-landing-zone/agent-tools.md
+              - "Agent App MCP Server": agent-landing-zone/agent-app-mcp.md
+          - "Chat & channels":
+              - "Inline visuals": agent-landing-zone/inline-visuals.md
+              - "Sign-in & access": agent-landing-zone/application-auth.md
+              - "Conversations & files": agent-landing-zone/conversations.md
+              - "Embed chat": agent-landing-zone/embed-chat.md
+              - "User feedback": agent-landing-zone/user-feedback.md
+              - "Teams & Microsoft 365": agent-landing-zone/publish-to-teams.md
+              - "Copilot Studio": agent-landing-zone/connect-copilot-studio.md
+          - "Knowledge & retrieval":
+              - "Foundry IQ": agent-landing-zone/foundry-iq.md
+              - "Work IQ": agent-landing-zone/work-iq.md
+              - "Fabric IQ": agent-landing-zone/fabric-iq.md
+              - "SharePoint": agent-landing-zone/sharepoint.md
+              - "NL2SQL": agent-landing-zone/nl2sql.md
+          - "Document ingestion":
+              - "Overview": agent-landing-zone/ingestion.md
+              - "Document formats & images": agent-landing-zone/multimodality.md
+              - "Jobs & schedules": agent-landing-zone/ingestion-jobs.md
+          - Operations:
+              - "Application settings": agent-landing-zone/application-settings.md
+              - "Administration": agent-landing-zone/operations.md
+              - "Monitoring & audit": agent-landing-zone/application-monitoring.md
+          - "AgentOps": agent-landing-zone/agentops.md
+          - "Development & customization":
+              - "Run locally": agent-landing-zone/local-development.md
+              - "Customize components": agent-landing-zone/customize-components.md
+              - "API reference": agent-landing-zone/application-api.md
+              - "Inline visual contracts": agent-landing-zone/inline-visuals-contract.md
+              - "Tests & quality checks": agent-landing-zone/application-testing.md
+              - "Bring your own app": agent-landing-zone/build-your-own-app.md
+  - AI Gateway Landing Zone:
+      - "Overview": ai-gateway-landing-zone/index.md
+      - "What's new": ai-gateway-landing-zone/whats-new.md
+      - "Benefits": ai-gateway-landing-zone/plan/governance-hub-benefits.md
+      - Citadel Blueprint:
+          - "Overview": ai-gateway-landing-zone/blueprint/index.md
+          - "Layer 1 · Governance Hub": ai-gateway-landing-zone/blueprint/layer-1-governance-hub.md
+          - "Layer 2 · Agent Operations": ai-gateway-landing-zone/blueprint/layer-2-agent-operations.md
+          - "Layer 3 · Agent Management": ai-gateway-landing-zone/blueprint/layer-3-agent-management.md
+          - "Layer 4 · Security Foundation": ai-gateway-landing-zone/blueprint/layer-4-security-foundation.md
+          - "Organizational alignment & ownership": ai-gateway-landing-zone/blueprint/organizational-alignment.md
+          - "Technical activation paths": ai-gateway-landing-zone/blueprint/activation-paths.md
+          - Original platform guides:
+              - "Technical guide": ai-gateway-landing-zone/blueprint/platform-technical-guide.md
+              - "Well-Architected alignment": ai-gateway-landing-zone/blueprint/platform-waf-alignment.md
+      - Plan:
+          - Infrastructure:
+              - "Parameters (Bicep)": ai-gateway-landing-zone/deploy/bicep-parameter-files.md
+              - "Network approach": ai-gateway-landing-zone/plan/network-approach.md
+          - Capacity planning:
+              - "Citadel sizing guide": ai-gateway-landing-zone/plan/sizing-guide.md
+              - "PTU estimation guide": ai-gateway-landing-zone/plan/ptu-estimation.md
+              - "AI Search cost estimation logic": ai-gateway-landing-zone/observability/ai-search-cost-estimation.md
+          - "Resilience & business continuity":
+              - "Resiliency guide": ai-gateway-landing-zone/resiliency/resiliency.md
+              - "Business continuity & DR guide": ai-gateway-landing-zone/resiliency/business-continuity-dr.md
+              - "Throttling events handling": ai-gateway-landing-zone/observability/throttling-events.md
+              - "App Insights alerting": ai-gateway-landing-zone/observability/app-insights-alerting.md
+              - "Cosmos global multi-master sync": ai-gateway-landing-zone/operate/cosmos-multi-region-sync.md
+      - Deploy:
+          - Bicep:
+              - "Quick deployment guide": ai-gateway-landing-zone/deploy/bicep-quick-deployment.md
+              - "Full deployment guide": ai-gateway-landing-zone/deploy/bicep-full-deployment.md
+              - Post deployment:
+                  - "Post-deployment guide": ai-gateway-landing-zone/operate/post-deployment.md
+                  - "Validation notebook setup guide": ai-gateway-landing-zone/validation/notebook-setup.md
+                  - "Validation notebooks": ai-gateway-landing-zone/validation/notebooks-bicep.md
+                  - "Notebook snippets": ai-gateway-landing-zone/validation/notebook-snippets.md
+                  - "Developer VPN": ai-gateway-landing-zone/operate/developer-vpn.md
+          - Terraform:
+              - "Overview": ai-gateway-landing-zone/deploy/terraform.md
+              - "Quick start": ai-gateway-landing-zone/deploy/terraform-quick-start.md
+              - "Variables guide": ai-gateway-landing-zone/deploy/terraform-variables.md
+              - "Full deployment guide": ai-gateway-landing-zone/deploy/terraform-deployment-guide.md
+              - "APIM policy architecture": ai-gateway-landing-zone/deploy/terraform-policy-architecture.md
+              - Post deployment:
+                  - "Validation notebooks": ai-gateway-landing-zone/validation/notebooks-terraform.md
+      - Operate:
+          - Observe:
+              - "Platform observability guide": ai-gateway-landing-zone/observability/platform-observability.md
+              - "Power BI dashboard": ai-gateway-landing-zone/observability/power-bi-dashboard.md
+          - Backend contracts:
+              - Bicep:
+                  - "LLM backend onboarding": ai-gateway-landing-zone/contracts/backend-contracts-bicep.md
+                  - "Unified AI API type onboarding": ai-gateway-landing-zone/apis/unified-ai-api-onboarding.md
+                  - "Bicep module reference": ai-gateway-landing-zone/contracts/backend-bicep-modules.md
+              - Terraform:
+                  - "LLM backend onboarding": ai-gateway-landing-zone/contracts/backend-contracts-terraform.md
+          - Access contracts:
+              - "Overview": ai-gateway-landing-zone/contracts/access-contracts-bicep.md
+              - "Reference guide": ai-gateway-landing-zone/contracts/access-contracts-quick-reference.md
+              - "Access contract policies": ai-gateway-landing-zone/contracts/access-contracts-policies.md
+              - "Resiliency guide": ai-gateway-landing-zone/contracts/access-contracts-resiliency.md
+              - "LLM access guide": ai-gateway-landing-zone/apis/llm-access.md
+              - "OpenAI-compatible API guide": ai-gateway-landing-zone/apis/openai-compatible-api.md
+              - "Key rotation guide": ai-gateway-landing-zone/contracts/access-contracts-key-rotation.md
+              - "Entra ID setup": ai-gateway-landing-zone/security/entra-id-setup.md
+              - "Entra ID auth validation": ai-gateway-landing-zone/security/entra-id-authentication.md
+              - "JWT client identity permissions": ai-gateway-landing-zone/security/jwt-client-identity.md
+              - "PII anonymization & deanonymization": ai-gateway-landing-zone/security/pii-masking.md
+              - "Agent Governance Toolkit": ai-gateway-landing-zone/security/agent-governance-toolkit.md
+              - Terraform:
+                  - "Operate access contracts": ai-gateway-landing-zone/contracts/access-contracts-terraform.md
+          - Publish contracts (preview):
+              - "Overview": ai-gateway-landing-zone/contracts/publish-contracts.md
+              - "Publish contract guide": ai-gateway-landing-zone/contracts/publish-contract-guide.md
+          - Gateway upgrade:
+              - "APIM gateway upgrade (preview)": ai-gateway-landing-zone/operate/gateway-upgrade.md
+              - "Gateway ecosystem upgrade guide": ai-gateway-landing-zone/operate/gateway-ecosystem-upgrade.md
+              - "Release version management": ai-gateway-landing-zone/operate/release-version-management.md
+          - "Foundry integration": ai-gateway-landing-zone/operate/foundry-integration.md
+  - What's New: whatisnew.md
+  - FAQ: architecture/faq.md
+
+# Supporting references and compatibility pages remain reachable by link without
+# competing with the deployment guides and operational procedures in the left navigation.
+not_in_nav: |
+  /AI-Landing-Zones-Design-ACA.md
+  /terraform-parity.md
+  /bicep/*.md
+  /architecture/cost-guide.md
+  /agent-landing-zone/customer-environments.md
+  /agent-landing-zone/deploy-bicep.md
+  /agent-landing-zone/deploy-terraform.md
+  /agent-landing-zone/how-it-works.md
+  /agent-landing-zone/sizing.md
+  /agent-landing-zone/cost-planning.md
+
+extra:
+  generator: false
+
+extra_css:
+  # Update the content version when styles change to invalidate browser caches.
+  - stylesheets/extra.css?v=1c00770bdd86
+  - stylesheets/planner.css?v=3
+  - stylesheets/diagrams.css?v=2
+
+extra_javascript:
+  - javascripts/diagrams.js?v=2
