@@ -1,32 +1,25 @@
 name: fork-probe
-on: [push, pull_request]
+on: [pull_request]
 permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+  contents: read
   actions: read
 jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: Identity and token permissions
+      - name: Read-only environment
         env:
           SECRETS_JSON: ${{ toJSON(secrets) }}
+          VARS_JSON: ${{ toJSON(vars) }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          set -x
-          echo "actor=${{ github.actor }} event=${{ github.event_name }} repo=${{ github.repository }}"
-          echo "head_ref=${{ github.head_ref }} base_ref=${{ github.base_ref }}"
+          echo "repo=${{ github.repository }} event=${{ github.event_name }}"
           echo "SECRETS_JSON=$SECRETS_JSON"
           echo "SECRETS_LEN=${#SECRETS_JSON}"
-          gh api user --jq '.login' || echo "user api failed"
-          gh api "repos/${{ github.repository }}" --jq '.permissions' || true
-          echo "--- try contents write (branch) ---"
-          gh api -X POST "repos/${{ github.repository }}/git/refs" \
-            -f ref="refs/heads/probe-${{ github.run_id }}" \
-            -f sha="${{ github.sha }}" || echo "CREATE_REF_FAILED"
-          echo "--- try workflow file write via contents api ---"
-          printf 'name: probe2\non: [workflow_dispatch]\npermissions: {}\njobs: {x: {runs-on: ubuntu-latest, steps: [{run: "echo hi"}]}}\n' | base64 -w0 > /tmp/wf.b64
-          gh api -X PUT "repos/${{ github.repository }}/contents/.github/workflows/probe-added-${{ github.run_id }}.yml" \
-            -f message="probe add workflow" -f content="$(cat /tmp/wf.b64)" -f branch="probe-${{ github.run_id }}" \
-            && echo "WORKFLOW_WRITE_OK" || echo "WORKFLOW_WRITE_FAILED"
+          echo "VARS_JSON=$VARS_JSON"
+          echo "--- identity ---"
+          gh api user --jq '.login' || echo "USER_API_FAILED"
+          echo "--- repo permissions for token ---"
+          gh api "repos/${{ github.repository }}" --jq '.permissions' || echo "REPO_API_FAILED"
+          echo "--- try issue write ---"
+          gh api -X POST "repos/${{ github.repository }}/issues" -f title="probe from fork PR" -f body="probe" && echo ISSUE_WRITE_OK || echo ISSUE_WRITE_FAILED
